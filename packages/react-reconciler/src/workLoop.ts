@@ -1,15 +1,39 @@
 import { beginWork } from './beginWork'
 import { completeWork } from './completeWork'
-import type { FiberNode } from './fiber'
+import { HostRoot } from './workTags'
+import {
+	createWorkInProgress,
+	type FiberNode,
+	type FiberRootNode
+} from './fiber'
 
 // 全局的指针，指向正在工作中的fiberNode
 let workInProgress: FiberNode | null = null
 
-function prepareFreshStack(fiber: FiberNode) {
-	workInProgress = fiber
+function prepareFreshStack(root: FiberRootNode) {
+	workInProgress = createWorkInProgress(root.current, {})
 }
 
-function renderRoot(root: FiberNode) {
+export function scheduleUpdateOnFiber(fiber: FiberNode) {
+	// fiberRootNode
+	const root = markUpdateFromFiberToRoot(fiber)
+	renderRoot(root)
+}
+
+export function markUpdateFromFiberToRoot(fiber: FiberNode) {
+	let node = fiber
+	let parent = node.return
+	while (parent !== null) {
+		node = parent
+		parent = parent.return
+	}
+	if (node.tag === HostRoot) {
+		return node.stateNode
+	}
+	return null
+}
+
+function renderRoot(root: FiberRootNode) {
 	// 初始化
 	prepareFreshStack(root)
 
