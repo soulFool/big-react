@@ -52,3 +52,89 @@
 - 需要一个统一的根节点保存通用信息
 
 [![pkzu43T.png](https://s21.ax1x.com/2024/08/08/pkzu43T.png)](https://imgse.com/i/pkzu43T)
+
+## mount流程
+
+更新流程的目的：
+
+- 生成wip fiberNode树
+- 标记副作用flags
+
+更新流程的步骤：
+
+- 递：beginWork
+- 归：completeWork
+
+### beginWork
+
+对于以下结构的reactElement：
+
+```html
+<a>
+	<b />
+</a>
+```
+
+当进入A的beginWork时，通过对比b的current fiberNode与b的reactElement，生成b对应的wip fiberNode。
+
+在此过程中最多会标记2类与「结构变化」相关的flags：
+
+- Placement：
+  插入：a -> ab 移动：abc -> bca
+- ChildDeletion：
+  删除：ul>li\*3 -> ul>li\*1
+
+不包含与「属性变化」相关的flag：
+
+- Update：
+
+```html
+<img title="123" /> -> <img title="456" />
+```
+
+#### 实现与Host相关节点的beginWork
+
+HostRoot的beginWork工作流程：
+
+1. 计算状态的最新值
+2. 创造子fiberNode
+
+HostComponent的beginWork工作流程：
+
+1. 创造子fiberNode
+
+HostText没有beginWork工作流程（因为它没有子节点）
+
+```html
+<p>123456</p>
+```
+
+#### beginWork性能优化策略
+
+```html
+<div>
+	<p>练习时长</p>
+	<span>两年半</span>
+</div>
+```
+
+理论上mount流程完毕后包含的flags：
+
+- 两年半 Placement
+- span Placement
+- 练习时长 Placement
+- p Placement
+- div Placement
+
+相比于执行5次Placement，我们可以构建好「离屏DOM树」后，对div执行1次Placement操作。
+
+### completeWork
+
+需要解决的问题：
+
+- 对于Host类型fiberNode：构建离屏DOM树
+- 标记Update flag（TODO）
+
+#### completeWork性能优化策略
+
+flags分布在不同fiberNode中，利用completeWork向上遍历（归）的流程，将子fiberNode的flags冒泡到父fiberNode

@@ -1,8 +1,8 @@
-import type { Props, Key, Ref } from 'shared/ReactTypes'
-import type { WorkTag } from './workTags'
+import { FunctionComponent, HostComponent, type WorkTag } from './workTags'
 import { Flags, NoFlags } from './fiberFlags'
 // 在tsconfig.ts中配置hostConfig是为了不把hostConfig的实现限制在react-reconciler中，因为对于不同的包都要实现它的hostConfig
 import { Container } from 'hostConfig'
+import type { Props, Key, Ref, ReactElementType } from 'shared/ReactTypes'
 
 export class FiberNode {
 	type: any
@@ -23,6 +23,7 @@ export class FiberNode {
 	alternate: FiberNode | null
 	// 标记副作用
 	flags: Flags
+	subtreeFlags: Flags
 	updateQueue: unknown
 
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
@@ -57,6 +58,8 @@ export class FiberNode {
 		this.alternate = null
 		// 副作用
 		this.flags = NoFlags
+		// 用于记录子fiber是否有副作用
+		this.subtreeFlags = NoFlags
 	}
 }
 
@@ -94,6 +97,7 @@ export const createWorkInProgress = (
 		// update
 		wip.pendingProps = pendingProps
 		wip.flags = NoFlags
+		wip.subtreeFlags = NoFlags
 	}
 	wip.type = current.type
 	wip.updateQueue = current.updateQueue
@@ -102,4 +106,21 @@ export const createWorkInProgress = (
 	wip.memoizedState = current.memoizedState
 
 	return wip
+}
+
+export function createFiberFromElement(element: ReactElementType): FiberNode {
+	const { type, key, props } = element
+	// 根据不同的type，返回不同的fiberNode
+	let fiberTag: WorkTag = FunctionComponent
+
+	if (typeof type === 'string') {
+		// <div> type: 'div'，这是因为babel将jsx编译出来之后就是这样的
+		fiberTag = HostComponent
+	} else if (typeof type !== 'function' && __DEV__) {
+		console.warn('未定义的type类型', element)
+	}
+
+	const fiber = new FiberNode(fiberTag, props, key)
+	fiber.type = type
+	return fiber
 }
