@@ -138,3 +138,32 @@ HostText没有beginWork工作流程（因为它没有子节点）
 #### completeWork性能优化策略
 
 flags分布在不同fiberNode中，利用completeWork向上遍历（归）的流程，将子fiberNode的flags冒泡到父fiberNode
+
+## 初探ReactDOM
+
+react内部3个阶段：
+
+- schedule阶段
+- render阶段（beginWork completeWork）
+- commit阶段（commitWork）
+
+### commit阶段的3个子阶段
+
+- beforeMutation阶段
+- mutation阶段
+- layout阶段
+
+### 当前commit阶段要执行的任务
+
+- fiber树的切换
+- 执行Placement对应操作
+
+需要注意的问题，考虑如下JSX，如果span含有flag，该如何找到它：
+
+```html
+<App>
+	<div>
+		<span>111</span>
+	</div>
+</App>
+```
