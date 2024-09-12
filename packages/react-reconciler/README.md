@@ -167,3 +167,54 @@ react内部3个阶段：
 	</div>
 </App>
 ```
+
+## 实现useState
+
+hook脱离FC上下文，仅仅是普通函数，如何让他拥有感知上下文的能力？
+比如说：
+
+- hook如何知道他是在另一个hook的上下文环境内执行？
+
+```JavaScript
+function App() {
+  useEffect(() => {
+    // 执行useState时怎么知道处在useEffect上下文？
+    useState(0)
+  })
+}
+```
+
+- hook怎么知道当前是mount还是update？
+
+解决方案：在不同上下文中调用的hook不是同一个函数。
+
+[![pAnFMfe.png](https://s21.ax1x.com/2024/09/11/pAnFMfe.png)](https://imgse.com/i/pAnFMfe)
+
+实现「内部数据共享层」时的注意事项：
+
+以浏览器举例，Reconciler + hostConfig = ReactDOM
+
+增加「内部数据共享层」，意味着Reconciler与React产生关联。
+
+如果两个包「产生关联」，在打包时需要考虑：两者的代码是打包在一起还是分开？
+
+如果打包在一起，意味着打包后的ReactDOM中会包含React的代码，那么ReactDOM中会包含一个内部数据共享层，React中也会包含一个内部数据共享层，这两者不是同一个内部数据共享层。
+
+而我们希望两者共享数据，所以不希望ReactDOM中会包含React的代码。
+
+- hook如何知道他是在另一个hook的上下文环境内执行？
+
+```JavaScript
+function App() {
+  useEffect(() => {
+    // 执行useState为什么能正确的状态
+    const [num] = useState(0)
+  })
+}
+```
+
+可以记录当前正在render的FC对应的fiberNode，在fiberNode中保存hook数据
+
+[![pAneKtP.png](https://s21.ax1x.com/2024/09/12/pAneKtP.png)](https://imgse.com/i/pAneKtP)
+
+hook在不同更新时的调用顺序不能变，这就是因为采用链表的数据结构保存hook的数据
