@@ -16,6 +16,6 @@ export const __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = {
 
 export const version = '0.0.0'
 
-// TODO 根据环境区分使用 jsx/jsxDEV
+// TODO: 根据环境区分使用 jsx/jsxDEV
 export const createElement = jsx
 export const isValidElement = isValidElementFn
