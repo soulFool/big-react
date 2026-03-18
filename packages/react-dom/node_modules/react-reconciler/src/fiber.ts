@@ -18,6 +18,7 @@ export class FiberNode {
 	index: number
 
 	memoizedProps: Props | null
+	// 更新完成之后的状态，再FunctionComponent中就是保存的hook链表中的第一个hook
 	memoizedState: any
 	// 用于切换current和workInProgress这两个fiberNode树
 	alternate: FiberNode | null
@@ -34,7 +35,7 @@ export class FiberNode {
 		this.key = key
 		// HostComponent <div> div DOM
 		this.stateNode = null
-		// 例如 对一个FunctionComponent来说，tag是0，type就是函数本身 () => {}
+		// 例如 对一个FunctionComponent来说，tag是0，type就是函数本身 () => {}, 如果是HostComponent <div>，type就是字符串 'div'
 		this.type = null
 
 		/** 节点之间的关系(构成树状结构) */
@@ -67,7 +68,7 @@ export class FiberNode {
 }
 
 export class FiberRootNode {
-	// 保存对应宿主环境挂载节点（对于）
+	// 保存对应宿主环境挂载节点
 	container: Container
 	// 指向hostRootFiber
 	current: FiberNode

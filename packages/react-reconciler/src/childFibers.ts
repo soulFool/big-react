@@ -107,7 +107,8 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 		currentFiber: FiberNode | null,
 		newChild?: ReactElementType
 	) {
-		// 判断当前fiber的类型
+		/* 判断当前fiber的类型 */
+		// 单个ReactElement
 		if (typeof newChild === 'object' && newChild !== null) {
 			switch (newChild.$$typeof) {
 				case REACT_ELEMENT_TYPE:
@@ -125,7 +126,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 
 		// TODO: 多节点的情况 ul> li*3
 
-		// HostText
+		// 文本节点
 		if (typeof newChild === 'string' || typeof newChild === 'number') {
 			return placeSingleChild(
 				reconcileSingleTextNode(returnFiber, currentFiber, newChild)

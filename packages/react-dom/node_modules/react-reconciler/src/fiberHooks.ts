@@ -20,7 +20,7 @@ let currentHook: Hook | null = null
 const { currentDispatcher } = internals
 
 interface Hook {
-	memoizedState: any
+	memoizedState: any // hook自身状态的值
 	updateQueue: unknown
 	next: Hook | null // 指向下一个hook
 }
@@ -172,12 +172,13 @@ function mountWorkInprogressHook(): Hook {
 		next: null
 	}
 
+	// workInProgressHook === null 说明 现在是mount时的第一个hook
 	if (workInProgressHook === null) {
-		// workInProgressHook === null 说明 现在是mount时的第一个hook
 		if (currentlyRenderingFiber === null) {
 			// 进入这个判断则说明没有在一个FC组件内调用hook
 			throw new Error('请在函数组件内调用hook')
 		} else {
+			// mount时的第一个hook
 			workInProgressHook = hook
 			currentlyRenderingFiber.memoizedState = workInProgressHook
 		}

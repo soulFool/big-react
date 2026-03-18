@@ -25,7 +25,7 @@ export const commitMutationEffects = (finishedWork: FiberNode) => {
 	nextEffect = finishedWork
 
 	while (nextEffect !== null) {
-		// 向下遍历
+		// 向下遍历到第一个没有subtreeFlags的节点
 		const child: FiberNode | null = nextEffect.child
 
 		if (
@@ -172,7 +172,7 @@ const commitPlacement = (finishedWork: FiberNode) => {
 	}
 }
 
-// 获取父级组件
+// 获取父级的宿主环境的节点
 function getHostParent(fiber: FiberNode): Container | null {
 	let parent = fiber.return
 
@@ -198,6 +198,9 @@ function getHostParent(fiber: FiberNode): Container | null {
 	return null
 }
 
+/**
+ * 递归向下，直到找到第一个类型为HostComponent或者HostText的fiberNode，将这个节点以及它的兄弟节点append到hostParent上
+ */
 function appendPlacementNodeIntoContainer(
 	finishedWork: FiberNode,
 	hostParent: Container
